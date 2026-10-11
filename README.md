@@ -16,11 +16,11 @@ It's a Progressive Web App (PWA), so it installs straight from the browser. Ther
 - **Tap anywhere** (or Space / arrow keys) to reverse direction.
 - Grab ★ stars for points. Grab them back-to-back for a combo up to ×5.
 - Skim close past a meteor for a **+1** bonus.
-- Top-left button: sound on/off. Top-right button: pause during a round, **Progress** on the menu and game-over screens. On desktop, **M** and **P** do the same as the corner buttons.
+- Top-left button: sound on/off. Top-right button: pause during a round, **Progress** on the start and game-over screens. On desktop, **M** and **P** do the same as the corner buttons.
 
-## 🏆 Prize challenge
+## 🎁 Gift challenge
 
-The first friend to score **150** wins a prize. A round that crosses 150 shows **PRIZE SCORE!**, and the game-over screen swaps in a gold **CLAIM PRIZE** button that drafts a WhatsApp message to the organiser. The threshold, the organiser's name and an optional direct WhatsApp number are set at the top of the prize section in `index.html` (`PRIZE_SCORE`, `PRIZE_HOST`, `PRIZE_WHATSAPP`).
+Anyone who scores **150 or more** can ping the organiser to claim a gift. Reaching 150 shows **GIFT UNLOCKED!**, and the Progress screen gets a gold **Claim gift on WhatsApp** button that opens WhatsApp with a ready-made claim message. The threshold, the organiser's name and an optional direct WhatsApp number are set at the top of the prize section in `index.html` (`PRIZE_SCORE`, `PRIZE_HOST`, `PRIZE_WHATSAPP`).
 
 ## Track your progress
 
@@ -33,10 +33,9 @@ Every round is saved on your device: score, time survived, stars, best combo, cl
 
 Scores stay private on your phone, with no account and no server.
 
-## Challenge friends
+## Share with friends
 
-Tap **SHARE SCORE** after a round. It opens your phone's share sheet (WhatsApp, iMessage, ...) with a link like
-`https://sahilarora10.github.io/orbit-dash/?beat=42`. Your friend sees "🎯 Beat your friend: 42" on the start screen, and after each round the game tells them how close they got.
+Tap **Share on WhatsApp** on the start screen or in Progress. It opens WhatsApp directly with a message and a challenge link like `https://sahilarora10.github.io/orbit-dash/?beat=42`. Friends who open it see "🎯 Beat your friend: 42" on the start screen, and after each round the game tells them how close they got.
 
 ## Development
 

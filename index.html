@@ -39,12 +39,12 @@
 
   /* ---------- Progress panel ---------- */
   #panel { position: fixed; inset: 0; z-index: 5; display: none; overflow-y: auto; -webkit-overflow-scrolling: touch;
-           touch-action: pan-y; overscroll-behavior: contain; background: rgba(7,7,15,0.95);
+           touch-action: pan-y; overscroll-behavior: contain; background: #07070f;
            -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); color: #dfe7ff;
            padding: calc(env(safe-area-inset-top, 0px) + 14px) calc(env(safe-area-inset-right, 0px) + 14px)
                     calc(env(safe-area-inset-bottom, 0px) + 20px) calc(env(safe-area-inset-left, 0px) + 14px); box-sizing: border-box; }
   #panel.open { display: block; animation: pin .18s ease-out; }
-  @keyframes pin { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+  @keyframes pin { from { transform: translateY(14px); } to { transform: none; } }
   #panel .wrap { max-width: 520px; margin: 0 auto; }
   #panel header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
   #panel h2 { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: .5px; color: #e8fbff; text-shadow: 0 0 14px rgba(79,227,255,.5); }
@@ -73,7 +73,20 @@
   #panel li .pb { color: #07070f; background: #ffd84a; border-radius: 6px; padding: 1px 6px; font-size: 10px; font-weight: 800; margin-left: 6px; }
   #panel .empty { text-align: center; padding: 30px 10px; color: #8fa0c8; }
   #panel .actions { display: flex; gap: 10px; flex-wrap: wrap; }
-  #panel .actions .share { flex: 1; background: #25d366; border-color: #25d366; color: #062b14; font-weight: 800; }
+  /* WhatsApp buttons (real links so the phone hands off to the WhatsApp app) */
+  a.wa, a.claim { display: flex; align-items: center; justify-content: center; gap: 10px; box-sizing: border-box;
+                  min-height: 52px; padding: 10px 16px; border-radius: 16px; text-decoration: none; font-weight: 800;
+                  font-size: 16px; line-height: 1.15; -webkit-tap-highlight-color: transparent; cursor: pointer; }
+  a.wa { background: #25d366; color: #062b14; box-shadow: 0 0 18px rgba(37,211,102,.35); }
+  a.wa:active, a.claim:active { transform: scale(.97); }
+  a.wa svg, a.claim svg { width: 24px; height: 24px; flex: none; }
+  a.wa span, a.claim span { display: flex; flex-direction: column; text-align: left; min-width: 0; }
+  a.wa small { font-size: 11px; font-weight: 600; opacity: .75; margin-top: 2px; }
+  #panel a.wa { margin-bottom: 14px; }
+  a.claim { margin-top: 10px; background: #ffd84a; color: #2a2000; }
+  #waStart { position: fixed; z-index: 3; display: none; font-family: inherit; }
+  #waStart.show { display: flex; }
+  a.wa small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   #panel .actions .clear { color: #ff8aa8; }
   #panel .prize { font-size: 14px; line-height: 1.45; padding: 10px 12px; margin: 0 0 12px; border-radius: 12px;
                   background: rgba(255,216,74,.08); border: 1px solid rgba(255,216,74,.3); color: #f3e3a8; }
@@ -85,6 +98,7 @@
 <body>
 <canvas id="c" tabindex="0"></canvas>
 <div id="sa"></div>
+<a id="waStart" class="wa" data-wa="share" href="https://wa.me/" target="_blank" rel="noopener"></a>
 <div id="panel" role="dialog" aria-modal="true" aria-label="Your progress"><div class="wrap"></div></div>
 <script>
 (() => {
@@ -148,33 +162,47 @@
   try { beat = Math.max(0, Math.min(9999, parseInt(new URLSearchParams(location.search).get('beat'), 10) || 0)); } catch (_) {}
 
   // ---------- prize challenge ----------
-  // First friend to reach PRIZE_SCORE messages the organiser to claim a prize.
+  // Anyone who scores PRIZE_SCORE or more can ping the organiser to claim a gift.
   // Put a WhatsApp number in PRIZE_WHATSAPP (country code, digits only, e.g. '919876543210')
-  // to make CLAIM PRIZE open that chat directly; left empty, it opens the share sheet instead.
+  // to make Claim prize open that chat directly; left empty, WhatsApp opens and the player picks the chat.
   const PRIZE_SCORE = 150, PRIZE_HOST = 'Sahil', PRIZE_WHATSAPP = '';
 
-  function openWhatsApp(text, number = '') {
-    const href = 'https://wa.me/' + number + '?text=' + encodeURIComponent(text);
-    const w = window.open(href, '_blank'); if (!w) location.href = href;
+  // ---------- WhatsApp sharing ----------
+  // Real <a href="https://wa.me/..."> links (not the generic share sheet). On phones we try the
+  // whatsapp:// app scheme first, which opens WhatsApp straight to the "send to…" chat picker, and fall
+  // back to wa.me if the app didn't open (e.g. WhatsApp not installed).
+  const isMobileOS = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const WA_ICON = '<svg viewBox="0 0 32 32" aria-hidden="true"><path fill="currentColor" d="M16 3C8.8 3 3 8.7 3 15.8c0 2.5.7 4.9 2 7L3 29l6.4-2c2 1.1 4.3 1.7 6.6 1.7 7.2 0 13-5.7 13-12.8S23.2 3 16 3zm0 23.4c-2.1 0-4.1-.6-5.9-1.7l-.4-.3-3.8 1.2 1.2-3.7-.3-.4c-1.2-1.8-1.9-3.9-1.9-6.1C4.9 9.8 9.9 5 16 5s11.1 4.8 11.1 10.8S22.1 26.4 16 26.4zm6.1-8.1c-.3-.2-2-1-2.3-1.1-.3-.1-.5-.2-.8.2-.2.3-.9 1.1-1.1 1.3-.2.2-.4.3-.7.1-.3-.2-1.4-.5-2.7-1.7-1-.9-1.7-2-1.9-2.3-.2-.3 0-.5.1-.7l.5-.6c.2-.2.2-.4.3-.6.1-.2 0-.4 0-.6l-1-2.5c-.3-.7-.6-.6-.8-.6h-.7c-.2 0-.6.1-.9.4-.3.3-1.2 1.1-1.2 2.8s1.2 3.2 1.4 3.5c.2.2 2.4 3.7 5.8 5.1 2.9 1.1 3.4.9 4.1.8.6-.1 2-.8 2.3-1.6.3-.8.3-1.5.2-1.6-.1-.2-.3-.3-.6-.4z"/></svg>';
+  const waWeb = (text, number = '') => 'https://wa.me/' + number + '?text=' + encodeURIComponent(text);
+  const waApp = (text, number = '') => number
+    ? 'whatsapp://send?phone=' + number + '&text=' + encodeURIComponent(text)
+    : 'whatsapp://send?text=' + encodeURIComponent(text);
+
+  function shareText() {
+    return best > 0
+      ? `🚀 I scored ${best} in Orbit Dash! Can you beat me? One-tap arcade game, free, no download 👉 ${GAME_URL}?beat=${best}`
+      : `🚀 Play Orbit Dash with me! One-tap neon arcade game, free, no download 👉 ${GAME_URL}`;
+  }
+  const waLabelHtml = () => 'Share on WhatsApp<small>' + (best > 0 ? `Challenge friends to beat your ${best}` : 'Invite friends to play') + '</small>';
+  function claimText() {
+    return `🎁 ${PRIZE_HOST}, I scored ${best} in Orbit Dash, that's ${PRIZE_SCORE}+! Claiming my gift 😄 (screenshot attached)`;
   }
 
-  function share(scoreToShare) {
-    const url = GAME_URL + (scoreToShare > 0 ? '?beat=' + scoreToShare : '');
-    const msg = scoreToShare > 0
-      ? `I just scored ${scoreToShare} in Orbit Dash 🚀 Bet you can't beat it! One tap to play, no download:`
-      : 'Try Orbit Dash 🚀, a one-tap neon arcade game. No download:';
-    try {
-      if (navigator.share) { navigator.share({ title: 'Orbit Dash', text: msg, url }).catch(err => { if (err && err.name !== 'AbortError') openWhatsApp(msg + ' ' + url); }); return; }
-    } catch (_) {}
-    openWhatsApp(msg + ' ' + url);
-  }
-
-  function claimPrize(s) {
-    const msg = `🏆 ${PRIZE_HOST}, I hit ${s} in Orbit Dash! That's over ${PRIZE_SCORE}, so I'm claiming the prize 😎 (screenshot attached)`;
-    if (PRIZE_WHATSAPP) { openWhatsApp(msg, PRIZE_WHATSAPP); return; }
-    try { if (navigator.share) { navigator.share({ title: 'Orbit Dash prize claim', text: msg }).catch(err => { if (err && err.name !== 'AbortError') openWhatsApp(msg); }); return; } } catch (_) {}
-    openWhatsApp(msg);
-  }
+  // Click handler for every [data-wa] link: try the app, fall back to the web link.
+  document.addEventListener('click', e => {
+    const a = e.target.closest && e.target.closest('a[data-wa]');
+    if (!a) return;
+    const claim = a.dataset.wa === 'claim', text = claim ? claimText() : shareText(), num = claim ? PRIZE_WHATSAPP : '';
+    a.href = waWeb(text, num); // keep href fresh (long-press → copy link still works)
+    if (!isMobileOS) return;   // desktop: let the browser follow wa.me (WhatsApp Web / desktop app)
+    e.preventDefault();
+    let left = false;
+    const onHide = () => { left = true; };
+    document.addEventListener('visibilitychange', onHide, { once: true });
+    window.addEventListener('pagehide', onHide, { once: true });
+    location.href = waApp(text, num);
+    setTimeout(() => { if (!left && !document.hidden) window.location.href = waWeb(text, num); }, 1500);
+  });
 
   // ---------- progress panel ----------
   const panel = document.getElementById('panel'), pwrap = panel.querySelector('.wrap');
@@ -226,6 +254,7 @@
 
     pwrap.innerHTML = `
       <header><h2>Your Progress</h2><button class="x" data-act="close" aria-label="Close">×</button></header>
+      <a class="wa" data-wa="share" href="${esc(waWeb(shareText()))}" target="_blank" rel="noopener">${WA_ICON}<span>${waLabelHtml()}</span></a>
       ${n ? `
       <div class="tiles">
         <div class="tile"><b>${n}</b><span>Rounds</span></div>
@@ -235,15 +264,12 @@
       </div>
       <div class="trend">${trend}</div>
       ${best >= PRIZE_SCORE
-        ? `<div class="prize won">🏆 <b>Prize unlocked!</b> Your best (${best}) beats ${PRIZE_SCORE}. Message ${esc(PRIZE_HOST)} with a screenshot to claim it.<button data-act="claim">Claim prize</button></div>`
-        : `<div class="prize">🏆 First to <b>${PRIZE_SCORE}</b> wins a prize from ${esc(PRIZE_HOST)}. You're <b>${PRIZE_SCORE - best}</b> away.</div>`}
+        ? `<div class="prize won">🎁 <b>Gift unlocked!</b> Your best is ${best}, so you made ${PRIZE_SCORE}+. Take a screenshot, then ping ${esc(PRIZE_HOST)} to claim your gift.<a class="claim" data-wa="claim" href="${esc(waWeb(claimText(), PRIZE_WHATSAPP))}" target="_blank" rel="noopener">${WA_ICON}<span>Claim gift on WhatsApp</span></a></div>`
+        : `<div class="prize">🎁 Score <b>${PRIZE_SCORE}+</b> to win a gift from ${esc(PRIZE_HOST)}. You're <b>${PRIZE_SCORE - best}</b> away.</div>`}
       <div class="chart">${chartSvg(rounds)}<small>Last ${Math.min(30, n)} rounds · <span style="color:#b48cff">━</span> 5-round average · <span style="color:#ffd84a">┅</span> best</small></div>
       <h3>Round history</h3>
       <ol>${list}</ol>` : `<div class="empty">No rounds yet. Play one and your scores will show up here! 🚀</div>`}
-      <div class="actions">
-        <button class="share" data-act="share">${best ? 'Challenge friends with my best (' + best + ')' : 'Share Orbit Dash'}</button>
-        ${n ? '<button class="clear" data-act="clear">Clear history</button>' : ''}
-      </div>`;
+      ${n ? '<div class="actions"><button class="clear" data-act="clear">Clear history</button></div>' : ''}`;
   }
   function openPanel() { renderPanel(); panel.classList.add('open'); panel.scrollTop = 0; }
   function closePanel() { panel.classList.remove('open'); cv.focus(); }
@@ -251,8 +277,6 @@
   panel.addEventListener('click', e => {
     const act = e.target.closest('[data-act]')?.dataset.act;
     if (act === 'close') closePanel();
-    else if (act === 'share') share(best);
-    else if (act === 'claim') claimPrize(best);
     else if (act === 'clear' && confirm('Delete all ' + rounds.length + ' saved rounds and your best score?')) {
       rounds = []; best = 0; store.set('orbitDashRounds', rounds); saveBest(); renderPanel();
     }
@@ -366,11 +390,11 @@
   const inBtn = (b, x, y) => Math.hypot(x - b.x, y - b.y) <= b.hit;
   const inRect = (b, x, y) => x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h;
 
-  // Game-over layout: text rows + one primary PLAY AGAIN + secondary Progress / Share (or Claim prize).
+  // Game-over layout: text rows + primary PLAY AGAIN + secondary PROGRESS (sharing lives on the start screen / Progress).
   // The whole block is measured, then centred on screen, so drawing and tap targets always agree.
   function overPills() {
     const fs = hudFs(), gap = Math.max(10, fs * 0.5);
-    const w = Math.min(fs * 9, (W - SA.l - SA.r - 32 - gap) / 2), full = w * 2 + gap;
+    const full = Math.min(fs * 18 + gap, W - SA.l - SA.r - 32);
     const h1 = Math.max(52, fs * 2.9), h2 = Math.max(46, fs * 2.4);
     const rows = [['title', fs * 2.1], ['score', fs * 1.35], ['status', fs * 1.2]];
     if (beat) rows.push(['beat', fs * 1.15]);
@@ -385,8 +409,7 @@
     return {
       rowY,
       again: { x: CX - full / 2, y: y1, w: full, h: h1 },
-      progress: { x: CX - w - gap / 2, y: y2, w, h: h2 },
-      share: { x: CX + gap / 2, y: y2, w, h: h2 },
+      progress: { x: CX - full / 2, y: y2, w: full, h: h2 },
     };
   }
 
@@ -400,7 +423,6 @@
       const p = overPills();
       if (inRect(p.again, x, y)) { action(); return; }
       if (inRect(p.progress, x, y)) { openPanel(); return; }
-      if (inRect(p.share, x, y)) { score >= PRIZE_SCORE ? claimPrize(score) : share(score); return; }
     }
     action();
   }, { passive: false });
@@ -409,7 +431,7 @@
   cv.addEventListener('contextmenu', e => e.preventDefault());
   ['touchstart', 'touchmove', 'touchend', 'gesturestart', 'dblclick'].forEach(t =>
     document.addEventListener(t, e => {
-      if (e.target && e.target.closest && e.target.closest('#panel')) { if (t === 'gesturestart' || t === 'dblclick') e.preventDefault(); return; }
+      if (e.target && e.target.closest && e.target.closest('#panel, #waStart')) { if (t === 'gesturestart' || t === 'dblclick') e.preventDefault(); return; }
       if (e.cancelable) e.preventDefault();
     }, { passive: false }));
 
@@ -476,7 +498,7 @@
     // prize threshold crossed mid-round
     if (!prizeHit && score >= PRIZE_SCORE) {
       prizeHit = true; flash = 0;
-      popText(CX, CY - R * 0.35, '🏆 PRIZE SCORE ' + PRIZE_SCORE + '!', 50);
+      popText(CX, CY - R * 0.35, '🎁 GIFT UNLOCKED!', 50);
       burst(CX, CY, 40, 50, 260, 1.1);
       beep(880, 0.12, 'triangle', 0.06, 300); setTimeout(() => beep(1320, 0.18, 'triangle', 0.06, 400), 120); buzz([20, 40, 20, 40, 60]);
     }
@@ -683,8 +705,24 @@
     text(label, tx, b.y + b.h / 2 + 1, size, fg, 800, 'center', alpha);
   }
 
+  // The start-screen WhatsApp button is a real HTML link layered over the canvas (links hand off to the
+  // WhatsApp app far more reliably than script-opened windows). Only touch the DOM when something changes.
+  const waStart = document.getElementById('waStart');
+  let waRect = '', waLabel = '', waShown = false;
+  function placeWaStart(x, y, w, h) {
+    const r = `${Math.round(x)},${Math.round(y)},${Math.round(w)},${Math.round(h)}`;
+    if (r !== waRect) {
+      waRect = r;
+      Object.assign(waStart.style, { left: Math.round(x) + 'px', top: Math.round(y) + 'px', width: Math.round(w) + 'px', minHeight: Math.round(h) + 'px' });
+    }
+    const label = waLabelHtml();
+    if (label !== waLabel) { waLabel = label; waStart.innerHTML = WA_ICON + '<span>' + label + '</span>'; waStart.href = waWeb(shareText()); }
+  }
+  function showWaStart(on) { if (on !== waShown) { waShown = on; waStart.classList.toggle('show', on); } }
+
   function hud() {
     const fs = hudFs();
+    showWaStart(state === 'menu' && !panelOpen());
     const blink = 0.55 + Math.sin(performance.now() / 350) * 0.45;
     const tap = isTouch ? 'Tap' : 'Click';
     const top = SA.t + Math.max(10, fs * 0.6);
@@ -694,26 +732,33 @@
       const info = [
         [isTouch ? 'Tap anywhere to reverse your orbit' : 'Click / Space to reverse your orbit', 0.78, '#b8c6e6', 600],
         ['Grab ★  ·  Dodge meteors  ·  Skim them for bonus', 0.66, '#8fa0c8', 500],
-        [best >= PRIZE_SCORE ? '🏆 Prize unlocked! Claim it in 📊 Progress' : `🏆 First to ${PRIZE_SCORE} wins a prize from ${PRIZE_HOST}!`, 0.74, '#ffd84a', 800],
+        [best >= PRIZE_SCORE ? '🎁 Gift unlocked! Claim it in 📊 Progress' : `🎁 Score ${PRIZE_SCORE}+ to win a gift from ${PRIZE_HOST}!`, 0.74, '#ffd84a', 800],
       ];
       if (best || rounds.length) info.push(['Best ' + best + '  ·  ' + rounds.length + ' round' + (rounds.length === 1 ? '' : 's') + ' played', 0.66, '#d9c27a', 600]);
       const lineH = fs * 1.35, pw = W - SA.l - SA.r, sideW = CX - R - SA.l - fs;
+      const bh = Math.max(52, fs * 2.7), bgap = fs * 1.0; // WhatsApp button height + gap above it
       const title = (x, y, maxW) => {
         ctx.save(); ctx.shadowColor = '#4fe3ff'; ctx.shadowBlur = blur(24);
         text('ORBIT DASH', x, y, fitSize('ORBIT DASH', fs * 2.2, maxW, 800), '#e8fbff', 800); ctx.restore();
       };
+      const blockH = (info.length - 1) * lineH;
       if (sideW >= fs * 11) {
-        // landscape: title on the left, instructions on the right, ring in the middle
+        // landscape: title on the left; instructions + WhatsApp button on the right; ring in the middle
         const lx = SA.l + (CX - R - SA.l) / 2, rx = CX + R + (W - SA.r - CX - R) / 2;
         title(lx, CY, sideW);
-        info.forEach(([s, k, c, wt], i) => text(s, rx, CY + (i - (info.length - 1) / 2) * lineH, fitSize(s, fs * k, sideW, wt), c, wt));
+        const colH = blockH + lineH / 2 + bgap + bh, y0 = CY - colH / 2 + lineH / 4;
+        info.forEach(([s, k, c, wt], i) => text(s, rx, y0 + i * lineH, fitSize(s, fs * k, sideW, wt), c, wt));
+        const bw = Math.min(sideW, 340);
+        placeWaStart(rx - bw / 2, y0 + blockH + lineH / 2 + bgap, bw, bh);
       } else {
-        // portrait: title above the ring, instructions below (slid up over the ring edge if short on room)
+        // portrait: title above the ring; instructions + WhatsApp button below (slid up over the ring edge if short on room)
         title(CX, Math.max(top + fs * 2.4, CY - R - fs * 1.7), pw - 24);
         let y = CY + R + fs * 1.5;
-        const blockH = (info.length - 1) * lineH;
-        if (y + blockH > H - SA.b - fs) y = H - SA.b - fs - blockH;
+        const need = blockH + lineH / 2 + bgap + bh;
+        if (y + need > H - SA.b - 14) y = H - SA.b - 14 - need;
         info.forEach(([s, k, c, wt], i) => text(s, CX, y + i * lineH, fitSize(s, fs * k, pw - 24, wt), c, wt));
+        const bw = Math.min(360, pw - 32);
+        placeWaStart(CX - bw / 2, y + blockH + lineH / 2 + bgap, bw, bh);
       }
       drawButtons();
       return;
@@ -748,18 +793,17 @@
       } else line('Round #1 saved: see it in Progress', Y.status, 0.66, '#9fb3d9', 600);
       if (beat) line(score > beat ? `🎉 You beat your friend's ${beat}!` : `${beat - score + 1} more to beat your friend (${beat})`, Y.beat, 0.68, '#ffd84a', 700);
       if (Y.prize) {
-        line(`🏆 PRIZE SCORE! You beat ${PRIZE_SCORE}`, Y.prize - fs * 0.45, 0.85, '#ffd84a', 800, a * (0.75 + 0.25 * blink));
-        line(`Screenshot this, then tap CLAIM PRIZE to tell ${PRIZE_HOST}`, Y.prize + fs * 0.55, 0.58, '#f3e3a8', 600);
+        line(`🎁 GIFT UNLOCKED! You scored ${PRIZE_SCORE}+`, Y.prize - fs * 0.45, 0.85, '#ffd84a', 800, a * (0.75 + 0.25 * blink));
+        line(`Screenshot this, then claim your gift in PROGRESS`, Y.prize + fs * 0.55, 0.62, '#f3e3a8', 600);
       }
-      if (Y.near) line(`🏆 ${PRIZE_SCORE - score} more for ${PRIZE_HOST}'s prize!`, Y.near, 0.66, '#ffd84a', 700);
+      if (Y.near) line(`🎁 ${PRIZE_SCORE - score} more for ${PRIZE_HOST}'s gift!`, Y.near, 0.66, '#ffd84a', 700);
       if (deathT > 0.6) {
         const pa = Math.min(1, (deathT - 0.6) * 4);
         const breathe = 10 + 8 * (0.5 + 0.5 * Math.sin(performance.now() / 420));
         pill(p.again, 'PLAY AGAIN', '#4fe3ff', '#04202a', pa, { play: true, size: 0.95, glow: breathe, border: 'rgba(200,250,255,0.7)' });
-        pill(p.progress, 'PROGRESS', 'rgba(255,255,255,0.07)', '#dfe7ff', pa, { size: 0.66 });
-        if (score >= PRIZE_SCORE) pill(p.share, 'CLAIM PRIZE', '#ffd84a', '#2a2000', pa, { size: 0.66, glow: 12, border: '#fff0b0' });
-        else pill(p.share, 'SHARE SCORE', 'rgba(37,211,102,0.16)', '#5dffa8', pa, { size: 0.66, border: 'rgba(37,211,102,0.55)' });
-        if (!isTouch) text('or press Space to play again', CX, p.share.y + p.share.h + fs * 0.9, fs * 0.55, '#6f7fa5', 500, 'center', pa * 0.9);
+        if (score >= PRIZE_SCORE) pill(p.progress, 'PROGRESS', 'rgba(255,216,74,0.18)', '#ffd84a', pa, { size: 0.72, glow: 10, border: '#ffd84a' });
+        else pill(p.progress, 'PROGRESS', 'rgba(255,255,255,0.07)', '#dfe7ff', pa, { size: 0.72 });
+        if (!isTouch) text('or press Space to play again', CX, p.progress.y + p.progress.h + fs * 0.9, fs * 0.55, '#6f7fa5', 500, 'center', pa * 0.9);
       }
     }
     drawButtons();

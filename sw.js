@@ -1,6 +1,6 @@
 // Offline support: cache the game shell so it launches instantly and works without a connection.
 // Bump VERSION whenever you change any cached file so phones pick up the update.
-const VERSION = 'orbit-dash-v3';
+const VERSION = 'orbit-dash-v4';
 const ASSETS = [
   './',
   './index.html',
