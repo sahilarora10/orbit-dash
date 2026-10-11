@@ -20,22 +20,15 @@ It's a Progressive Web App (PWA), so it installs straight from the browser. Ther
 
 ## 🎁 Gift challenge
 
-Anyone who scores **150 or more** can ping the organiser to claim a gift. Reaching 150 shows **GIFT UNLOCKED!**, and the Progress screen gets a gold **Claim gift on WhatsApp** button that opens WhatsApp with a ready-made claim message. The threshold, the organiser's name and an optional direct WhatsApp number are set at the top of the prize section in `index.html` (`PRIZE_SCORE`, `PRIZE_HOST`, `PRIZE_WHATSAPP`).
+Anyone who scores **150 or more** can claim a gift from the organiser. Progress shows a bar toward 150. Once it is reached, the bar becomes a **Gift unlocked** card with **Share result on WhatsApp**, which sends the winning score, time, stars, combo and date. Configure it via `PRIZE_SCORE`, `PRIZE_HOST` and `PRIZE_WHATSAPP` (optional direct number) in `index.html`.
 
 ## Track your progress
 
-Every round is saved on your device: score, time survived, stars, best combo, close calls and when you played. Tap the 📊 button (or **PROGRESS** after a round) to see:
+Every round is saved **on the device, in the browser it is played in** (`localStorage`). There is no account and no server. Tap 📊 (or **PROGRESS** after a round) to see best, rounds, recent average, a chart and history. The game asks the browser to keep this data persistently. On iPhone, adding the game to the Home Screen gives it its own storage, which Safari will not clear for inactivity.
 
-- rounds played, best score, average of your last 10, total play time
-- an improvement trend comparing your last 10 rounds with the 10 before
-- a chart of your last 30 rounds with a 5-round moving average
-- your full round history, with each new best marked
+## Compete with friends
 
-Scores stay private on your phone, with no account and no server.
-
-## Share with friends
-
-Tap **Share on WhatsApp** on the start screen or in Progress. It opens WhatsApp directly with a message and a challenge link like `https://sahilarora10.github.io/orbit-dash/?beat=42`. Friends who open it see "🎯 Beat your friend: 42" on the start screen, and after each round the game tells them how close they got.
+**Compete with your friends** (start screen and Progress) opens WhatsApp directly with a challenge link like `https://sahilarora10.github.io/orbit-dash/?beat=42`. Friends who open it see "🎯 Beat your friend: 42" and are told how close they got after each round.
 
 ## Development
 

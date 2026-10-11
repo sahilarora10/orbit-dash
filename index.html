@@ -52,47 +52,52 @@
                   border-radius: 12px; padding: 10px 14px; min-height: 44px; cursor: pointer; }
   #panel button:active { transform: scale(.97); }
   #panel .x { width: 44px; padding: 0; font-size: 22px; line-height: 1; }
-  #panel .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 12px; }
-  @media (max-width: 380px) { #panel .tiles { grid-template-columns: repeat(2, 1fr); } }
-  #panel .tile { background: rgba(255,255,255,.05); border: 1px solid rgba(160,190,255,.14); border-radius: 12px; padding: 10px 8px; text-align: center; }
-  #panel .tile b { display: block; font-size: 22px; color: #fff; }
+  #panel .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px; }
+  #panel .tile { background: rgba(255,255,255,.05); border: 1px solid rgba(160,190,255,.14); border-radius: 14px; padding: 12px 6px; text-align: center; }
+  #panel .tile b { display: block; font-size: 26px; color: #fff; line-height: 1.1; }
   #panel .tile span { font-size: 11px; text-transform: uppercase; letter-spacing: .8px; color: #8fa0c8; }
   #panel .tile.gold b { color: #ffd84a; }
-  #panel .trend { font-size: 14px; margin: 4px 2px 10px; color: #9fb3d9; }
-  #panel .trend .up { color: #5dffa8; font-weight: 700; } #panel .trend .down { color: #ff8aa8; font-weight: 700; }
-  #panel .chart { background: rgba(255,255,255,.04); border: 1px solid rgba(160,190,255,.14); border-radius: 12px; padding: 8px; margin-bottom: 14px; }
-  #panel .chart svg { display: block; width: 100%; height: 140px; }
-  #panel .chart small { display: block; text-align: center; color: #7c8bb0; font-size: 11px; margin-top: 2px; }
-  #panel h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: #8fa0c8; margin: 6px 2px 8px; }
-  #panel ol { list-style: none; margin: 0 0 16px; padding: 0; }
-  #panel li { display: grid; grid-template-columns: 44px 56px 1fr auto; align-items: center; gap: 8px; padding: 10px 10px;
+  #panel .trend { font-size: 13px; margin: 0 2px 10px; color: #8fa0c8; }
+  #panel .trend .up { color: #5dffa8; font-weight: 800; } #panel .trend .down { color: #ff8aa8; font-weight: 800; }
+  #panel .chart { background: rgba(255,255,255,.04); border: 1px solid rgba(160,190,255,.14); border-radius: 14px; padding: 8px; margin-bottom: 16px; }
+  #panel .chart svg { display: block; width: 100%; height: 120px; }
+  #panel .chart small { display: block; text-align: center; color: #6f7fa5; font-size: 11px; margin-top: 2px; }
+  #panel h3 { font-size: 12px; text-transform: uppercase; letter-spacing: 1.2px; color: #8fa0c8; margin: 0 4px 6px; }
+  #panel ol { list-style: none; margin: 0 0 14px; padding: 0; }
+  #panel li { display: grid; grid-template-columns: 40px 1fr auto auto; align-items: center; gap: 12px; padding: 9px 12px;
               border-radius: 10px; font-size: 13px; color: #9fb3d9; }
   #panel li:nth-child(odd) { background: rgba(255,255,255,.035); }
-  #panel li .n { color: #6f7fa5; } #panel li .s { font-size: 18px; font-weight: 800; color: #fff; }
-  #panel li .d { color: #6f7fa5; font-size: 12px; text-align: right; }
-  #panel li .pb { color: #07070f; background: #ffd84a; border-radius: 6px; padding: 1px 6px; font-size: 10px; font-weight: 800; margin-left: 6px; }
+  #panel li .n { color: #6f7fa5; font-size: 12px; } #panel li .s { font-size: 18px; font-weight: 800; color: #fff; }
+  #panel li .t { color: #8fa0c8; } #panel li .d { color: #6f7fa5; font-size: 12px; text-align: right; min-width: 92px; }
+  #panel li .pb { color: #07070f; background: #ffd84a; border-radius: 6px; padding: 1px 6px; font-size: 10px; font-weight: 800; margin-left: 8px; vertical-align: 3px; }
   #panel .empty { text-align: center; padding: 30px 10px; color: #8fa0c8; }
-  #panel .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  #panel .actions { display: flex; justify-content: center; }
+  #panel .actions .clear { color: #ff8aa8; background: none; border: none; font-size: 13px; opacity: .8; }
+
+  /* Gift card */
+  #panel .gift { padding: 14px; margin: 0 0 14px; border-radius: 16px; background: rgba(255,216,74,.07); border: 1px solid rgba(255,216,74,.28); }
+  #panel .gift.won { background: rgba(255,216,74,.14); border-color: #ffd84a; box-shadow: 0 0 22px rgba(255,216,74,.18); }
+  #panel .gift-top { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; font-weight: 700; color: #f3e3a8; font-size: 15px; }
+  #panel .gift-top b { color: #ffd84a; font-size: 22px; font-weight: 800; white-space: nowrap; }
+  #panel .gift-top b small { font-size: 13px; color: #b9a96a; font-weight: 700; }
+  #panel .gift.won .gift-top b { font-size: 34px; }
+  #panel .gift-meta { color: #d9c992; font-size: 13px; margin-top: 2px; }
+  #panel .gift-hint { color: #b9a96a; font-size: 12px; text-align: center; margin-top: 8px; }
+  #panel .bar { height: 8px; margin-top: 10px; border-radius: 99px; background: rgba(255,216,74,.15); overflow: hidden; }
+  #panel .bar i { display: block; height: 100%; border-radius: 99px; background: linear-gradient(90deg, #ffb84a, #ffd84a); box-shadow: 0 0 10px rgba(255,216,74,.6); }
+
   /* WhatsApp buttons (real links so the phone hands off to the WhatsApp app) */
-  a.wa, a.claim { display: flex; align-items: center; justify-content: center; gap: 10px; box-sizing: border-box;
-                  min-height: 52px; padding: 10px 16px; border-radius: 16px; text-decoration: none; font-weight: 800;
+  a.wa, a.claim { display: flex; align-items: center; justify-content: center; gap: 8px; box-sizing: border-box;
+                  min-height: 52px; padding: 10px 12px; border-radius: 16px; text-decoration: none; font-weight: 800;
                   font-size: 16px; line-height: 1.15; -webkit-tap-highlight-color: transparent; cursor: pointer; }
-  a.wa { background: #25d366; color: #062b14; box-shadow: 0 0 18px rgba(37,211,102,.35); }
+  a.wa { background: #25d366; color: #062b14; box-shadow: 0 0 18px rgba(37,211,102,.3); }
   a.wa:active, a.claim:active { transform: scale(.97); }
-  a.wa svg, a.claim svg { width: 24px; height: 24px; flex: none; }
-  a.wa span, a.claim span { display: flex; flex-direction: column; text-align: left; min-width: 0; }
-  a.wa small { font-size: 11px; font-weight: 600; opacity: .75; margin-top: 2px; }
+  a.wa svg, a.claim svg { width: 18px; height: 18px; flex: none; }
+  a.wa span, a.claim span { min-width: 0; text-align: center; }
   #panel a.wa { margin-bottom: 14px; }
-  a.claim { margin-top: 10px; background: #ffd84a; color: #2a2000; }
+  a.claim { margin-top: 12px; background: #ffd84a; color: #2a2000; }
   #waStart { position: fixed; z-index: 3; display: none; font-family: inherit; }
   #waStart.show { display: flex; }
-  a.wa small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  #panel .actions .clear { color: #ff8aa8; }
-  #panel .prize { font-size: 14px; line-height: 1.45; padding: 10px 12px; margin: 0 0 12px; border-radius: 12px;
-                  background: rgba(255,216,74,.08); border: 1px solid rgba(255,216,74,.3); color: #f3e3a8; }
-  #panel .prize b { color: #ffd84a; }
-  #panel .prize.won { background: rgba(255,216,74,.16); border-color: #ffd84a; }
-  #panel .prize button { display: block; width: 100%; margin-top: 10px; background: #ffd84a; border-color: #ffd84a; color: #2a2000; font-weight: 800; }
 </style>
 </head>
 <body>
@@ -153,6 +158,8 @@
     rounds.push(r);
     if (rounds.length > MAX_ROUNDS) rounds = rounds.slice(-MAX_ROUNDS);
     store.set('orbitDashRounds', rounds);
+    // Ask the browser not to evict this device's history under storage pressure (Chrome/Android honour this).
+    try { navigator.storage && navigator.storage.persist && navigator.storage.persist().catch(() => {}); } catch (_) {}
   }
   const avg = a => (a.length ? a.reduce((x, y) => x + y, 0) / a.length : 0);
 
@@ -180,12 +187,18 @@
 
   function shareText() {
     return best > 0
-      ? `🚀 I scored ${best} in Orbit Dash! Can you beat me? One-tap arcade game, free, no download 👉 ${GAME_URL}?beat=${best}`
-      : `🚀 Play Orbit Dash with me! One-tap neon arcade game, free, no download 👉 ${GAME_URL}`;
+      ? `🚀 Can you beat my ${best} in Orbit Dash?\nClick & play 👉 ${GAME_URL}?beat=${best}`
+      : `🚀 Let's compete in Orbit Dash!\nClick & play 👉 ${GAME_URL}`;
   }
-  const waLabelHtml = () => 'Share on WhatsApp<small>' + (best > 0 ? `Challenge friends to beat your ${best}` : 'Invite friends to play') + '</small>';
+  const waLabelHtml = () => 'Compete with your friends';
+  // The round that set the current best (newest one if tied), for the gift result card.
+  const bestRound = () => { for (let i = rounds.length - 1; i >= 0; i--) if (rounds[i].s === best) return rounds[i]; return null; };
+  const fmtDate = ts => new Date(ts).toLocaleString([], { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
   function claimText() {
-    return `🎁 ${PRIZE_HOST}, I scored ${best} in Orbit Dash, that's ${PRIZE_SCORE}+! Claiming my gift 😄 (screenshot attached)`;
+    const r = bestRound();
+    return `🎁 *Orbit Dash: gift claim*\n\n🏆 Score: *${best}*` +
+      (r ? `\n⏱️ ${(r.t || 0).toFixed(1)}s · ⭐ ${r.st || 0} stars · ×${r.mc || 1} combo\n📅 ${fmtDate(r.d)}` : '') +
+      `\n\nHey ${PRIZE_HOST}, I scored ${PRIZE_SCORE}+! 😄`;
   }
 
   // Click handler for every [data-wa] link: try the app, fall back to the web link.
@@ -216,21 +229,16 @@
     if (diff === 1) return 'Yesterday ' + hm;
     return d.toLocaleDateString([], { day: 'numeric', month: 'short' }) + ' ' + hm;
   }
-  function fmtDur(sec) { const m = Math.floor(sec / 60); return m >= 60 ? Math.floor(m / 60) + 'h ' + (m % 60) + 'm' : m ? m + 'm ' + Math.round(sec % 60) + 's' : Math.round(sec) + 's'; }
 
   function chartSvg(list) {
     const pts = list.slice(-30), n = pts.length, Wc = 300, Hc = 120, pad = 10;
     const max = Math.max(5, ...pts.map(r => r.s)), y = v => Hc - pad - (v / max) * (Hc - pad * 2);
     const x = i => (n === 1 ? Wc / 2 : pad + (i * (Wc - pad * 2)) / (n - 1));
     const line = pts.map((r, i) => `${x(i).toFixed(1)},${y(r.s).toFixed(1)}`).join(' ');
-    // 5-round moving average shows the trend through the noise
-    const ma = pts.map((_, i) => avg(pts.slice(Math.max(0, i - 4), i + 1).map(r => r.s)));
-    const maLine = ma.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
     const dots = pts.map((r, i) => `<circle cx="${x(i).toFixed(1)}" cy="${y(r.s).toFixed(1)}" r="${r.pb ? 4 : 2.6}" fill="${r.pb ? '#ffd84a' : '#4fe3ff'}"/>`).join('');
     return `<svg viewBox="0 0 ${Wc} ${Hc}" preserveAspectRatio="none" aria-label="Score chart">
       <line x1="${pad}" x2="${Wc - pad}" y1="${y(best)}" y2="${y(best)}" stroke="#ffd84a" stroke-opacity=".45" stroke-dasharray="4 4" vector-effect="non-scaling-stroke"/>
-      ${n > 1 ? `<polyline points="${line}" fill="none" stroke="#4fe3ff" stroke-opacity=".5" stroke-width="1.5" vector-effect="non-scaling-stroke"/>` : ''}
-      ${n > 2 ? `<polyline points="${maLine}" fill="none" stroke="#b48cff" stroke-width="2.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>` : ''}
+      ${n > 1 ? `<polyline points="${line}" fill="none" stroke="#4fe3ff" stroke-opacity=".8" stroke-width="2" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>` : ''}
       ${dots}</svg>`;
   }
 
@@ -238,38 +246,49 @@
     const n = rounds.length;
     const scores = rounds.map(r => r.s);
     const last10 = scores.slice(-10), prev10 = scores.slice(-20, -10);
-    const totalT = rounds.reduce((a, r) => a + (r.t || 0), 0);
+    // One short trend line, only once there's enough data to mean something.
     let trend = '';
     if (prev10.length >= 3 && last10.length >= 3) {
       const d = avg(last10) - avg(prev10);
-      trend = Math.abs(d) < 0.5 ? 'Holding steady compared with your previous 10 rounds.'
-        : d > 0 ? `<span class="up">▲ +${d.toFixed(1)}</span> average vs your previous 10 rounds. You're improving!`
-        : `<span class="down">▼ ${d.toFixed(1)}</span> average vs your previous 10 rounds. Warm-up time?`;
-    } else if (n) { const need = Math.max(1, 13 - n); trend = `Play ${need} more round${need === 1 ? '' : 's'} to unlock your improvement trend.`; }
+      trend = Math.abs(d) < 0.5 ? '● Steady vs your previous 10 rounds'
+        : d > 0 ? `<span class="up">▲ +${d.toFixed(1)}</span> vs your previous 10 rounds`
+        : `<span class="down">▼ ${d.toFixed(1)}</span> vs your previous 10 rounds`;
+    }
+
+    // Gift card: progress bar until 150, then the result + a WhatsApp button to send it.
+    const br = bestRound();
+    const gift = best >= PRIZE_SCORE
+      ? `<div class="gift won">
+           <div class="gift-top"><span>🎁 Gift unlocked</span><b>${best}</b></div>
+           ${br ? `<div class="gift-meta">${(br.t || 0).toFixed(0)}s · ${br.st || 0} stars · ×${br.mc || 1} combo<br>${esc(fmtDate(br.d))}</div>` : ''}
+           <a class="claim" data-wa="claim" href="${esc(waWeb(claimText(), PRIZE_WHATSAPP))}" target="_blank" rel="noopener">${WA_ICON}<span>Share result on WhatsApp</span></a>
+           <div class="gift-hint">Send it to ${esc(PRIZE_HOST)} to claim your gift</div>
+         </div>`
+      : `<div class="gift">
+           <div class="gift-top"><span>🎁 Score ${PRIZE_SCORE}+ to win a gift</span><b>${best}<small>/${PRIZE_SCORE}</small></b></div>
+           <div class="bar"><i style="width:${Math.min(100, (best / PRIZE_SCORE) * 100).toFixed(1)}%"></i></div>
+         </div>`;
 
     const list = rounds.slice(-50).reverse().map(r => `
-      <li><span class="n">#${r.n}</span><span class="s">${r.s}</span>
-        <span>${(r.t || 0).toFixed(1)}s · ★${r.st || 0} · ×${r.mc || 1}${r.c ? ' · ' + r.c + ' close' : ''}${r.pb ? '<span class="pb">BEST</span>' : ''}</span>
-        <span class="d">${esc(fmtWhen(r.d))}</span></li>`).join('');
+      <li><span class="n">#${r.n}</span><span class="s">${r.s}${r.pb ? '<span class="pb">BEST</span>' : ''}</span>
+        <span class="t">${(r.t || 0).toFixed(0)}s</span><span class="d">${esc(fmtWhen(r.d))}</span></li>`).join('');
 
     pwrap.innerHTML = `
       <header><h2>Your Progress</h2><button class="x" data-act="close" aria-label="Close">×</button></header>
       <a class="wa" data-wa="share" href="${esc(waWeb(shareText()))}" target="_blank" rel="noopener">${WA_ICON}<span>${waLabelHtml()}</span></a>
+      ${gift}
       ${n ? `
       <div class="tiles">
-        <div class="tile"><b>${n}</b><span>Rounds</span></div>
         <div class="tile gold"><b>${best}</b><span>Best</span></div>
-        <div class="tile"><b>${avg(last10).toFixed(1)}</b><span>Avg (last 10)</span></div>
-        <div class="tile"><b>${fmtDur(totalT)}</b><span>Played</span></div>
+        <div class="tile"><b>${n}</b><span>Rounds</span></div>
+        <div class="tile"><b>${avg(last10).toFixed(0)}</b><span>Recent avg</span></div>
       </div>
-      <div class="trend">${trend}</div>
-      ${best >= PRIZE_SCORE
-        ? `<div class="prize won">🎁 <b>Gift unlocked!</b> Your best is ${best}, so you made ${PRIZE_SCORE}+. Take a screenshot, then ping ${esc(PRIZE_HOST)} to claim your gift.<a class="claim" data-wa="claim" href="${esc(waWeb(claimText(), PRIZE_WHATSAPP))}" target="_blank" rel="noopener">${WA_ICON}<span>Claim gift on WhatsApp</span></a></div>`
-        : `<div class="prize">🎁 Score <b>${PRIZE_SCORE}+</b> to win a gift from ${esc(PRIZE_HOST)}. You're <b>${PRIZE_SCORE - best}</b> away.</div>`}
-      <div class="chart">${chartSvg(rounds)}<small>Last ${Math.min(30, n)} rounds · <span style="color:#b48cff">━</span> 5-round average · <span style="color:#ffd84a">┅</span> best</small></div>
-      <h3>Round history</h3>
-      <ol>${list}</ol>` : `<div class="empty">No rounds yet. Play one and your scores will show up here! 🚀</div>`}
-      ${n ? '<div class="actions"><button class="clear" data-act="clear">Clear history</button></div>' : ''}`;
+      ${trend ? `<div class="trend">${trend}</div>` : ''}
+      <div class="chart">${chartSvg(rounds)}<small>Last ${Math.min(30, n)} rounds</small></div>
+      <h3>History</h3>
+      <ol>${list}</ol>
+      <div class="actions"><button class="clear" data-act="clear">Clear history</button></div>`
+      : `<div class="empty">Play a round and your scores will show up here.</div>`}`;
   }
   function openPanel() { renderPanel(); panel.classList.add('open'); panel.scrollTop = 0; }
   function closePanel() { panel.classList.remove('open'); cv.focus(); }
@@ -396,10 +415,11 @@
     const fs = hudFs(), gap = Math.max(10, fs * 0.5);
     const full = Math.min(fs * 18 + gap, W - SA.l - SA.r - 32);
     const h1 = Math.max(52, fs * 2.9), h2 = Math.max(46, fs * 2.4);
-    const rows = [['title', fs * 2.1], ['score', fs * 1.35], ['status', fs * 1.2]];
-    if (beat) rows.push(['beat', fs * 1.15]);
-    if (score >= PRIZE_SCORE) rows.push(['prize', fs * 2.1]);
-    else if (score >= PRIZE_SCORE / 2) rows.push(['near', fs * 1.15]);
+    // Title, big score, one status line, and at most ONE extra line (gift > friend challenge > close to gift).
+    const rows = [['title', fs * 1.5], ['score', fs * 3.6], ['status', fs * 1.3]];
+    if (score >= PRIZE_SCORE) rows.push(['prize', fs * 1.5]);
+    else if (beat) rows.push(['beat', fs * 1.4]);
+    else if (score >= PRIZE_SCORE * 0.6) rows.push(['near', fs * 1.4]);
     const textH = rows.reduce((a, r) => a + r[1], 0), total = textH + fs * 0.8 + h1 + gap + h2;
     const minY = SA.t + Math.max(56, fs * 3), maxY = H - SA.b - total - 12;
     let y = Math.max(minY, Math.min(CY - total / 2, maxY));
@@ -729,12 +749,13 @@
     if (state === 'menu') {
       text(tap.toUpperCase() + ' TO START', CX, CY - Math.max(fs * 1.7, 30 * S), fs * 0.95, '#4fe3ff', 800, 'center', blink);
       if (beat) text('🎯 Beat your friend: ' + beat, CX, CY + Math.max(fs * 1.7, 30 * S), fitSize('🎯 Beat your friend: ' + beat, fs * 0.72, R * 1.6, 800), '#ffd84a', 800);
+      // Three short lines: the one control, the goal, the gift (+ best score once there is one).
       const info = [
-        [isTouch ? 'Tap anywhere to reverse your orbit' : 'Click / Space to reverse your orbit', 0.78, '#b8c6e6', 600],
-        ['Grab ★  ·  Dodge meteors  ·  Skim them for bonus', 0.66, '#8fa0c8', 500],
-        [best >= PRIZE_SCORE ? '🎁 Gift unlocked! Claim it in 📊 Progress' : `🎁 Score ${PRIZE_SCORE}+ to win a gift from ${PRIZE_HOST}!`, 0.74, '#ffd84a', 800],
+        [isTouch ? 'Tap to switch direction' : 'Click or Space to switch direction', 0.84, '#dfe7ff', 700],
+        ['Collect ★   ·   Avoid meteors', 0.72, '#8fa0c8', 600],
+        [best >= PRIZE_SCORE ? '🎁 Gift unlocked! Claim it in Progress' : `🎁 Score ${PRIZE_SCORE}+ to win a gift`, 0.78, '#ffd84a', 800],
       ];
-      if (best || rounds.length) info.push(['Best ' + best + '  ·  ' + rounds.length + ' round' + (rounds.length === 1 ? '' : 's') + ' played', 0.66, '#d9c27a', 600]);
+      if (best) info.push(['Your best: ' + best, 0.66, '#b9a96a', 600]);
       const lineH = fs * 1.35, pw = W - SA.l - SA.r, sideW = CX - R - SA.l - fs;
       const bh = Math.max(52, fs * 2.7), bgap = fs * 1.0; // WhatsApp button height + gap above it
       const title = (x, y, maxW) => {
@@ -748,7 +769,7 @@
         title(lx, CY, sideW);
         const colH = blockH + lineH / 2 + bgap + bh, y0 = CY - colH / 2 + lineH / 4;
         info.forEach(([s, k, c, wt], i) => text(s, rx, y0 + i * lineH, fitSize(s, fs * k, sideW, wt), c, wt));
-        const bw = Math.min(sideW, 340);
+        const bw = Math.min(sideW + fs * 0.4, 340);
         placeWaStart(rx - bw / 2, y0 + blockH + lineH / 2 + bgap, bw, bh);
       } else {
         // portrait: title above the ring; instructions + WhatsApp button below (slid up over the ring edge if short on room)
@@ -784,19 +805,14 @@
       ctx.fillStyle = `rgba(7,7,15,${0.72 * a})`; ctx.fillRect(0, 0, W, H);
       const p = overPills(), Y = p.rowY, maxW = W - SA.l - SA.r - 24;
       const line = (s, y, k, c, wt, al = a) => text(s, CX, y, fitSize(s, fs * k, maxW, wt), c, wt, 'center', al);
-      line('GAME OVER', Y.title, 1.6, '#ff5c8a', 800);
-      line('Score ' + score + '   ·   ' + time.toFixed(1) + 's', Y.score, 0.85, '#ffffff', 700);
-      if (newBest) line('★ NEW BEST ★', Y.status, 0.78, '#ffd84a', 800, a * blink);
-      else if (roundNo > 1) {
-        const d = score - prevAvg, sign = d >= 0 ? '+' : '−';
-        line(`Round #${roundNo}  ·  ${sign}${Math.abs(d).toFixed(1)} vs your average`, Y.status, 0.66, d >= 0 ? '#5dffa8' : '#ff8aa8', 600);
-      } else line('Round #1 saved: see it in Progress', Y.status, 0.66, '#9fb3d9', 600);
-      if (beat) line(score > beat ? `🎉 You beat your friend's ${beat}!` : `${beat - score + 1} more to beat your friend (${beat})`, Y.beat, 0.68, '#ffd84a', 700);
-      if (Y.prize) {
-        line(`🎁 GIFT UNLOCKED! You scored ${PRIZE_SCORE}+`, Y.prize - fs * 0.45, 0.85, '#ffd84a', 800, a * (0.75 + 0.25 * blink));
-        line(`Screenshot this, then claim your gift in PROGRESS`, Y.prize + fs * 0.55, 0.62, '#f3e3a8', 600);
-      }
-      if (Y.near) line(`🎁 ${PRIZE_SCORE - score} more for ${PRIZE_HOST}'s gift!`, Y.near, 0.66, '#ffd84a', 700);
+      line('GAME OVER', Y.title, 0.95, '#ff5c8a', 800);
+      ctx.save(); ctx.shadowColor = score >= PRIZE_SCORE ? '#ffd84a' : '#4fe3ff'; ctx.shadowBlur = blur(22);
+      line(String(score), Y.score, 3.4, score >= PRIZE_SCORE ? '#ffd84a' : '#ffffff', 800); ctx.restore();
+      if (newBest) line('★ New best!', Y.status, 0.8, '#ffd84a', 800, a * (0.7 + 0.3 * blink));
+      else line('Best ' + best, Y.status, 0.72, '#b9a96a', 600);
+      if (Y.prize) line('🎁 Gift unlocked! Claim it in Progress', Y.prize, 0.72, '#ffd84a', 800, a * (0.75 + 0.25 * blink));
+      else if (Y.beat) line(score > beat ? `🎉 You beat your friend's ${beat}!` : `🎯 ${beat - score + 1} more to beat your friend`, Y.beat, 0.68, '#ffd84a', 700);
+      else if (Y.near) line(`🎁 ${PRIZE_SCORE - score} more for the gift`, Y.near, 0.68, '#ffd84a', 700);
       if (deathT > 0.6) {
         const pa = Math.min(1, (deathT - 0.6) * 4);
         const breathe = 10 + 8 * (0.5 + 0.5 * Math.sin(performance.now() / 420));
