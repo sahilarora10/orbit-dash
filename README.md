@@ -18,6 +18,10 @@ It's a Progressive Web App (PWA), so it installs straight from the browser. Ther
 - Skim close past a meteor for a **+1** bonus.
 - Top-left button: sound on/off. Top-right button: pause during a round, **Progress** on the menu and game-over screens. On desktop, **M** and **P** do the same as the corner buttons.
 
+## 🏆 Prize challenge
+
+The first friend to score **150** wins a prize. A round that crosses 150 shows **PRIZE SCORE!**, and the game-over screen swaps in a gold **CLAIM PRIZE** button that drafts a WhatsApp message to the organiser. The threshold, the organiser's name and an optional direct WhatsApp number are set at the top of the prize section in `index.html` (`PRIZE_SCORE`, `PRIZE_HOST`, `PRIZE_WHATSAPP`).
+
 ## Track your progress
 
 Every round is saved on your device: score, time survived, stars, best combo, close calls and when you played. Tap the 📊 button (or **PROGRESS** after a round) to see:

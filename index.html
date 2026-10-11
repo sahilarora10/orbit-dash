@@ -75,6 +75,11 @@
   #panel .actions { display: flex; gap: 10px; flex-wrap: wrap; }
   #panel .actions .share { flex: 1; background: #25d366; border-color: #25d366; color: #062b14; font-weight: 800; }
   #panel .actions .clear { color: #ff8aa8; }
+  #panel .prize { font-size: 14px; line-height: 1.45; padding: 10px 12px; margin: 0 0 12px; border-radius: 12px;
+                  background: rgba(255,216,74,.08); border: 1px solid rgba(255,216,74,.3); color: #f3e3a8; }
+  #panel .prize b { color: #ffd84a; }
+  #panel .prize.won { background: rgba(255,216,74,.16); border-color: #ffd84a; }
+  #panel .prize button { display: block; width: 100%; margin-top: 10px; background: #ffd84a; border-color: #ffd84a; color: #2a2000; font-weight: 800; }
 </style>
 </head>
 <body>
@@ -112,7 +117,8 @@
     CX = SA.l + pw / 2;
     CY = SA.t + ph / 2 + Math.min(pw, ph) * 0.04;
     // bigger ring in portrait, but keep a visible runway for meteors entering from the sides
-    R = Math.max(60, Math.min(pw * 0.34, ph * 0.28));
+    // (off-screen arrows warn about meteors entering from the narrow side margins)
+    R = Math.max(60, Math.min(pw * 0.43, ph * 0.36));
     S = R / 150; // scale factor for sizes & speeds
     makeStars();
   }
@@ -141,16 +147,33 @@
   let beat = 0;
   try { beat = Math.max(0, Math.min(9999, parseInt(new URLSearchParams(location.search).get('beat'), 10) || 0)); } catch (_) {}
 
+  // ---------- prize challenge ----------
+  // First friend to reach PRIZE_SCORE messages the organiser to claim a prize.
+  // Put a WhatsApp number in PRIZE_WHATSAPP (country code, digits only, e.g. '919876543210')
+  // to make CLAIM PRIZE open that chat directly; left empty, it opens the share sheet instead.
+  const PRIZE_SCORE = 150, PRIZE_HOST = 'Sahil', PRIZE_WHATSAPP = '';
+
+  function openWhatsApp(text, number = '') {
+    const href = 'https://wa.me/' + number + '?text=' + encodeURIComponent(text);
+    const w = window.open(href, '_blank'); if (!w) location.href = href;
+  }
+
   function share(scoreToShare) {
     const url = GAME_URL + (scoreToShare > 0 ? '?beat=' + scoreToShare : '');
     const msg = scoreToShare > 0
       ? `I just scored ${scoreToShare} in Orbit Dash 🚀 Bet you can't beat it! One tap to play, no download:`
       : 'Try Orbit Dash 🚀, a one-tap neon arcade game. No download:';
-    const wa = () => { const w = window.open('https://wa.me/?text=' + encodeURIComponent(msg + ' ' + url), '_blank'); if (!w) location.href = 'https://wa.me/?text=' + encodeURIComponent(msg + ' ' + url); };
     try {
-      if (navigator.share) { navigator.share({ title: 'Orbit Dash', text: msg, url }).catch(err => { if (err && err.name !== 'AbortError') wa(); }); return; }
+      if (navigator.share) { navigator.share({ title: 'Orbit Dash', text: msg, url }).catch(err => { if (err && err.name !== 'AbortError') openWhatsApp(msg + ' ' + url); }); return; }
     } catch (_) {}
-    wa();
+    openWhatsApp(msg + ' ' + url);
+  }
+
+  function claimPrize(s) {
+    const msg = `🏆 ${PRIZE_HOST}, I hit ${s} in Orbit Dash! That's over ${PRIZE_SCORE}, so I'm claiming the prize 😎 (screenshot attached)`;
+    if (PRIZE_WHATSAPP) { openWhatsApp(msg, PRIZE_WHATSAPP); return; }
+    try { if (navigator.share) { navigator.share({ title: 'Orbit Dash prize claim', text: msg }).catch(err => { if (err && err.name !== 'AbortError') openWhatsApp(msg); }); return; } } catch (_) {}
+    openWhatsApp(msg);
   }
 
   // ---------- progress panel ----------
@@ -211,6 +234,9 @@
         <div class="tile"><b>${fmtDur(totalT)}</b><span>Played</span></div>
       </div>
       <div class="trend">${trend}</div>
+      ${best >= PRIZE_SCORE
+        ? `<div class="prize won">🏆 <b>Prize unlocked!</b> Your best (${best}) beats ${PRIZE_SCORE}. Message ${esc(PRIZE_HOST)} with a screenshot to claim it.<button data-act="claim">Claim prize</button></div>`
+        : `<div class="prize">🏆 First to <b>${PRIZE_SCORE}</b> wins a prize from ${esc(PRIZE_HOST)}. You're <b>${PRIZE_SCORE - best}</b> away.</div>`}
       <div class="chart">${chartSvg(rounds)}<small>Last ${Math.min(30, n)} rounds · <span style="color:#b48cff">━</span> 5-round average · <span style="color:#ffd84a">┅</span> best</small></div>
       <h3>Round history</h3>
       <ol>${list}</ol>` : `<div class="empty">No rounds yet. Play one and your scores will show up here! 🚀</div>`}
@@ -226,6 +252,7 @@
     const act = e.target.closest('[data-act]')?.dataset.act;
     if (act === 'close') closePanel();
     else if (act === 'share') share(best);
+    else if (act === 'claim') claimPrize(best);
     else if (act === 'clear' && confirm('Delete all ' + rounds.length + ' saved rounds and your best score?')) {
       rounds = []; best = 0; store.set('orbitDashRounds', rounds); saveBest(); renderPanel();
     }
@@ -260,11 +287,11 @@
   // ---------- game state ----------
   let state = 'menu'; // menu | play | over | paused
   let angle, dir, score, mult, multTimer, time, spawnT, meteors, star, parts, texts, shake, flash, deathT, newBest, trail;
-  let stars = 0, closes = 0, maxMult = 1, prevAvg = 0, roundNo = 0;
+  let stars = 0, closes = 0, maxMult = 1, prevAvg = 0, roundNo = 0, prizeHit = false;
 
   function reset() {
     angle = -Math.PI / 2; dir = 1; score = 0; mult = 1; multTimer = 0; time = 0;
-    stars = 0; closes = 0; maxMult = 1;
+    stars = 0; closes = 0; maxMult = 1; prizeHit = false;
     spawnT = 1.2; meteors = []; parts = []; texts = []; shake = 0; flash = 0; deathT = 0; newBest = false; trail = [];
     placeStar();
   }
@@ -339,11 +366,28 @@
   const inBtn = (b, x, y) => Math.hypot(x - b.x, y - b.y) <= b.hit;
   const inRect = (b, x, y) => x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h;
 
-  // Big pill buttons on the game-over screen.
+  // Game-over layout: text rows + one primary PLAY AGAIN + secondary Progress / Share (or Claim prize).
+  // The whole block is measured, then centred on screen, so drawing and tap targets always agree.
   function overPills() {
-    const fs = hudFs(), h = Math.max(44, fs * 2.4), gap = 10;
-    const w = Math.min(170, (W - SA.l - SA.r - 40 - gap) / 2), y = CY + fs * 3.3;
-    return { progress: { x: CX - w - gap / 2, y, w, h }, share: { x: CX + gap / 2, y, w, h } };
+    const fs = hudFs(), gap = Math.max(10, fs * 0.5);
+    const w = Math.min(fs * 9, (W - SA.l - SA.r - 32 - gap) / 2), full = w * 2 + gap;
+    const h1 = Math.max(52, fs * 2.9), h2 = Math.max(46, fs * 2.4);
+    const rows = [['title', fs * 2.1], ['score', fs * 1.35], ['status', fs * 1.2]];
+    if (beat) rows.push(['beat', fs * 1.15]);
+    if (score >= PRIZE_SCORE) rows.push(['prize', fs * 2.1]);
+    else if (score >= PRIZE_SCORE / 2) rows.push(['near', fs * 1.15]);
+    const textH = rows.reduce((a, r) => a + r[1], 0), total = textH + fs * 0.8 + h1 + gap + h2;
+    const minY = SA.t + Math.max(56, fs * 3), maxY = H - SA.b - total - 12;
+    let y = Math.max(minY, Math.min(CY - total / 2, maxY));
+    const rowY = {};
+    for (const [k, h] of rows) { rowY[k] = y + h / 2; y += h; }
+    const y1 = y + fs * 0.8, y2 = y1 + h1 + gap;
+    return {
+      rowY,
+      again: { x: CX - full / 2, y: y1, w: full, h: h1 },
+      progress: { x: CX - w - gap / 2, y: y2, w, h: h2 },
+      share: { x: CX + gap / 2, y: y2, w, h: h2 },
+    };
   }
 
   cv.addEventListener('pointerdown', e => {
@@ -354,8 +398,9 @@
     if ((state === 'menu' || state === 'over') && inBtn(b.stats, x, y)) { openPanel(); return; }
     if (state === 'over' && deathT > 0.6) {
       const p = overPills();
+      if (inRect(p.again, x, y)) { action(); return; }
       if (inRect(p.progress, x, y)) { openPanel(); return; }
-      if (inRect(p.share, x, y)) { share(score); return; }
+      if (inRect(p.share, x, y)) { score >= PRIZE_SCORE ? claimPrize(score) : share(score); return; }
     }
     action();
   }, { passive: false });
@@ -426,6 +471,14 @@
       beep(700 + mult * 120, 0.12, 'triangle', 0.05, 400); buzz(12);
       mult = Math.min(mult + 1, 5); multTimer = 3.2;
       placeStar();
+    }
+
+    // prize threshold crossed mid-round
+    if (!prizeHit && score >= PRIZE_SCORE) {
+      prizeHit = true; flash = 0;
+      popText(CX, CY - R * 0.35, '🏆 PRIZE SCORE ' + PRIZE_SCORE + '!', 50);
+      burst(CX, CY, 40, 50, 260, 1.1);
+      beep(880, 0.12, 'triangle', 0.06, 300); setTimeout(() => beep(1320, 0.18, 'triangle', 0.06, 400), 120); buzz([20, 40, 20, 40, 60]);
     }
 
     // spawn meteors
@@ -571,8 +624,15 @@
     ctx.font = `${weight} ${Math.round(size)}px system-ui, -apple-system, sans-serif`; ctx.fillText(str, x, y); ctx.globalAlpha = 1;
   }
 
+  // Shrink a font size until the string fits maxW (keeps long lines on-screen on narrow phones).
+  function fitSize(str, size, maxW, weight = 700) {
+    ctx.font = `${weight} ${Math.round(size)}px system-ui, -apple-system, sans-serif`;
+    const w = ctx.measureText(str).width;
+    return w > maxW && w > 0 ? Math.max(10, size * maxW / w) : size;
+  }
+
   // HUD font scales with the short side but never drops below a legible 14px on phones.
-  function hudFs() { return Math.max(14, Math.min(W - SA.l - SA.r, H - SA.t - SA.b) * 0.045); }
+  function hudFs() { return Math.max(15, Math.min(30, Math.min(W - SA.l - SA.r, H - SA.t - SA.b) * 0.05)); }
 
   function drawButtons() {
     const b = buttons();
@@ -602,15 +662,25 @@
     });
   }
 
-  function pill(b, label, bgc, fg, alpha) {
+  function pill(b, label, bgc, fg, alpha, opts = {}) {
     ctx.save(); ctx.globalAlpha = alpha;
-    const r = Math.min(b.h / 2, 22);
+    const r = Math.min(b.h / 2, 24);
     ctx.beginPath();
     if (ctx.roundRect) ctx.roundRect(b.x, b.y, b.w, b.h, r); else ctx.rect(b.x, b.y, b.w, b.h);
-    ctx.fillStyle = bgc; ctx.fill();
-    ctx.strokeStyle = 'rgba(160,190,255,0.3)'; ctx.lineWidth = 1.5; ctx.stroke();
+    if (opts.glow) { ctx.shadowColor = bgc; ctx.shadowBlur = blur(opts.glow); }
+    ctx.fillStyle = bgc; ctx.fill(); ctx.shadowBlur = 0;
+    ctx.strokeStyle = opts.border || 'rgba(160,190,255,0.3)'; ctx.lineWidth = 1.5; ctx.stroke();
     ctx.restore();
-    text(label, b.x + b.w / 2, b.y + b.h / 2 + 1, Math.min(hudFs() * 0.68, b.w / (label.length * 0.62)), fg, 800, 'center', alpha);
+    const size = Math.min(hudFs() * (opts.size || 0.68), b.w / (label.length * 0.62 + (opts.play ? 2 : 0)));
+    let tx = b.x + b.w / 2;
+    if (opts.play) { // drawn play triangle (emoji ▶ renders inconsistently across phones)
+      ctx.font = `800 ${Math.round(size)}px system-ui, -apple-system, sans-serif`;
+      const tw = ctx.measureText(label).width, ic = size * 0.8, sp = size * 0.5, x0 = tx - (tw + ic + sp) / 2, cy = b.y + b.h / 2;
+      ctx.save(); ctx.globalAlpha = alpha; ctx.fillStyle = fg; ctx.beginPath();
+      ctx.moveTo(x0, cy - ic / 2); ctx.lineTo(x0 + ic * 0.85, cy); ctx.lineTo(x0, cy + ic / 2); ctx.closePath(); ctx.fill(); ctx.restore();
+      tx = x0 + ic + sp + tw / 2;
+    }
+    text(label, tx, b.y + b.h / 2 + 1, size, fg, 800, 'center', alpha);
   }
 
   function hud() {
@@ -619,20 +689,40 @@
     const tap = isTouch ? 'Tap' : 'Click';
     const top = SA.t + Math.max(10, fs * 0.6);
     if (state === 'menu') {
-      ctx.save(); ctx.shadowColor = '#4fe3ff'; ctx.shadowBlur = blur(20);
-      text('ORBIT DASH', CX, Math.max(top + fs * 2.6, CY - R - fs * 1.6), fs * 1.9, '#e8fbff', 800); ctx.restore();
-      text(isTouch ? 'Tap anywhere to reverse your orbit' : 'Click / Space to reverse your orbit', CX, CY + R + fs * 1.4, fs * 0.72, '#9fb3d9', 500);
-      text('Grab ★  ·  Dodge meteors', CX, CY + R + fs * 2.4, fs * 0.62, '#7c8bb0', 500);
-      text('Skim past them for a bonus', CX, CY + R + fs * 3.2, fs * 0.62, '#7c8bb0', 500);
-      text(tap.toUpperCase() + ' TO START', CX, CY, fs * 0.85, '#4fe3ff', 800, 'center', blink);
-      if (beat) text('🎯 Beat your friend: ' + beat, CX, CY + fs * 1.4, fs * 0.66, '#ffd84a', 800);
-      if (best || rounds.length) text('Best ' + best + '  ·  ' + rounds.length + ' round' + (rounds.length === 1 ? '' : 's') + ' played', CX, CY + R + fs * 4.3, fs * 0.62, '#ffd84a', 600);
+      text(tap.toUpperCase() + ' TO START', CX, CY - Math.max(fs * 1.7, 30 * S), fs * 0.95, '#4fe3ff', 800, 'center', blink);
+      if (beat) text('🎯 Beat your friend: ' + beat, CX, CY + Math.max(fs * 1.7, 30 * S), fitSize('🎯 Beat your friend: ' + beat, fs * 0.72, R * 1.6, 800), '#ffd84a', 800);
+      const info = [
+        [isTouch ? 'Tap anywhere to reverse your orbit' : 'Click / Space to reverse your orbit', 0.78, '#b8c6e6', 600],
+        ['Grab ★  ·  Dodge meteors  ·  Skim them for bonus', 0.66, '#8fa0c8', 500],
+        [best >= PRIZE_SCORE ? '🏆 Prize unlocked! Claim it in 📊 Progress' : `🏆 First to ${PRIZE_SCORE} wins a prize from ${PRIZE_HOST}!`, 0.74, '#ffd84a', 800],
+      ];
+      if (best || rounds.length) info.push(['Best ' + best + '  ·  ' + rounds.length + ' round' + (rounds.length === 1 ? '' : 's') + ' played', 0.66, '#d9c27a', 600]);
+      const lineH = fs * 1.35, pw = W - SA.l - SA.r, sideW = CX - R - SA.l - fs;
+      const title = (x, y, maxW) => {
+        ctx.save(); ctx.shadowColor = '#4fe3ff'; ctx.shadowBlur = blur(24);
+        text('ORBIT DASH', x, y, fitSize('ORBIT DASH', fs * 2.2, maxW, 800), '#e8fbff', 800); ctx.restore();
+      };
+      if (sideW >= fs * 11) {
+        // landscape: title on the left, instructions on the right, ring in the middle
+        const lx = SA.l + (CX - R - SA.l) / 2, rx = CX + R + (W - SA.r - CX - R) / 2;
+        title(lx, CY, sideW);
+        info.forEach(([s, k, c, wt], i) => text(s, rx, CY + (i - (info.length - 1) / 2) * lineH, fitSize(s, fs * k, sideW, wt), c, wt));
+      } else {
+        // portrait: title above the ring, instructions below (slid up over the ring edge if short on room)
+        title(CX, Math.max(top + fs * 2.4, CY - R - fs * 1.7), pw - 24);
+        let y = CY + R + fs * 1.5;
+        const blockH = (info.length - 1) * lineH;
+        if (y + blockH > H - SA.b - fs) y = H - SA.b - fs - blockH;
+        info.forEach(([s, k, c, wt], i) => text(s, CX, y + i * lineH, fitSize(s, fs * k, pw - 24, wt), c, wt));
+      }
       drawButtons();
       return;
     }
-    // score block (centred between the two corner buttons)
-    text(String(score), CX, top + fs * 0.9, fs * 2, '#ffffff', 800);
-    text('BEST ' + best, CX, top + fs * 2.15, fs * 0.55, '#ffd84a', 600, 'center', 0.75);
+    // score block (centred between the two corner buttons); the game-over card shows its own score
+    if (state !== 'over') {
+      text(String(score), CX, top + fs * 0.9, fs * 2, score >= PRIZE_SCORE ? '#ffd84a' : '#ffffff', 800);
+      text('BEST ' + best, CX, top + fs * 2.15, fs * 0.55, '#ffd84a', 600, 'center', 0.75);
+    }
     if (mult > 1 && state === 'play') {
       text('x' + mult + ' COMBO', CX, top + fs * 3.0, fs * 0.65, '#ffd84a', 800, 'center', 0.6 + 0.4 * Math.min(1, multTimer));
       const w = fs * 4, h = 3; ctx.fillStyle = 'rgba(255,216,74,0.25)'; ctx.fillRect(CX - w / 2, top + fs * 3.5, w, h);
@@ -646,20 +736,30 @@
     }
     if (state === 'over') {
       const a = Math.min(1, deathT * 2.5);
-      ctx.fillStyle = `rgba(7,7,15,${0.55 * a})`; ctx.fillRect(0, 0, W, H);
-      text('GAME OVER', CX, CY - fs * 2.3, fs * 1.5, '#ff5c8a', 800, 'center', a);
-      text('Score ' + score + '   ·   ' + time.toFixed(1) + 's', CX, CY - fs * 0.95, fs * 0.75, '#e8fbff', 600, 'center', a);
-      if (newBest) text('★ NEW BEST ★', CX, CY + fs * 0.15, fs * 0.75, '#ffd84a', 800, 'center', a * blink);
+      ctx.fillStyle = `rgba(7,7,15,${0.72 * a})`; ctx.fillRect(0, 0, W, H);
+      const p = overPills(), Y = p.rowY, maxW = W - SA.l - SA.r - 24;
+      const line = (s, y, k, c, wt, al = a) => text(s, CX, y, fitSize(s, fs * k, maxW, wt), c, wt, 'center', al);
+      line('GAME OVER', Y.title, 1.6, '#ff5c8a', 800);
+      line('Score ' + score + '   ·   ' + time.toFixed(1) + 's', Y.score, 0.85, '#ffffff', 700);
+      if (newBest) line('★ NEW BEST ★', Y.status, 0.78, '#ffd84a', 800, a * blink);
       else if (roundNo > 1) {
         const d = score - prevAvg, sign = d >= 0 ? '+' : '−';
-        text(`Round #${roundNo}  ·  ${sign}${Math.abs(d).toFixed(1)} vs your average`, CX, CY + fs * 0.15, fs * 0.6, d >= 0 ? '#5dffa8' : '#ff8aa8', 600, 'center', a);
-      } else text('Round #1 saved: check your Progress', CX, CY + fs * 0.15, fs * 0.6, '#9fb3d9', 600, 'center', a);
-      if (beat) text(score > beat ? `🎉 You beat your friend's ${beat}!` : `${beat - score + 1} more to beat your friend (${beat})`, CX, CY + fs * 1.3, fs * 0.62, '#ffd84a', 700, 'center', a);
+        line(`Round #${roundNo}  ·  ${sign}${Math.abs(d).toFixed(1)} vs your average`, Y.status, 0.66, d >= 0 ? '#5dffa8' : '#ff8aa8', 600);
+      } else line('Round #1 saved: see it in Progress', Y.status, 0.66, '#9fb3d9', 600);
+      if (beat) line(score > beat ? `🎉 You beat your friend's ${beat}!` : `${beat - score + 1} more to beat your friend (${beat})`, Y.beat, 0.68, '#ffd84a', 700);
+      if (Y.prize) {
+        line(`🏆 PRIZE SCORE! You beat ${PRIZE_SCORE}`, Y.prize - fs * 0.45, 0.85, '#ffd84a', 800, a * (0.75 + 0.25 * blink));
+        line(`Screenshot this, then tap CLAIM PRIZE to tell ${PRIZE_HOST}`, Y.prize + fs * 0.55, 0.58, '#f3e3a8', 600);
+      }
+      if (Y.near) line(`🏆 ${PRIZE_SCORE - score} more for ${PRIZE_HOST}'s prize!`, Y.near, 0.66, '#ffd84a', 700);
       if (deathT > 0.6) {
-        const p = overPills(), pa = Math.min(1, (deathT - 0.6) * 4);
-        pill(p.progress, 'PROGRESS', 'rgba(255,255,255,0.08)', '#dfe7ff', pa);
-        pill(p.share, 'SHARE SCORE', '#25d366', '#062b14', pa);
-        text(tap.toLowerCase() + ' anywhere else to play again', CX, p.progress.y + p.progress.h + fs * 1.0, fs * 0.58, '#9fb3d9', 500, 'center', blink);
+        const pa = Math.min(1, (deathT - 0.6) * 4);
+        const breathe = 10 + 8 * (0.5 + 0.5 * Math.sin(performance.now() / 420));
+        pill(p.again, 'PLAY AGAIN', '#4fe3ff', '#04202a', pa, { play: true, size: 0.95, glow: breathe, border: 'rgba(200,250,255,0.7)' });
+        pill(p.progress, 'PROGRESS', 'rgba(255,255,255,0.07)', '#dfe7ff', pa, { size: 0.66 });
+        if (score >= PRIZE_SCORE) pill(p.share, 'CLAIM PRIZE', '#ffd84a', '#2a2000', pa, { size: 0.66, glow: 12, border: '#fff0b0' });
+        else pill(p.share, 'SHARE SCORE', 'rgba(37,211,102,0.16)', '#5dffa8', pa, { size: 0.66, border: 'rgba(37,211,102,0.55)' });
+        if (!isTouch) text('or press Space to play again', CX, p.share.y + p.share.h + fs * 0.9, fs * 0.55, '#6f7fa5', 500, 'center', pa * 0.9);
       }
     }
     drawButtons();
