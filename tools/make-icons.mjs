@@ -96,3 +96,84 @@ const jobs = [
   ['apple-touch-icon.png', 180, 0.04], ['favicon-32.png', 32, 0],
 ];
 for (const [name, size, pad] of jobs) { writeFileSync(join(out, name), render(size, pad, size > 256 ? 3 : 4)); console.log('wrote', name); }
+
+// ---------- 1200x630 link-preview image (WhatsApp / socials) ----------
+// Tiny 5x7 pixel font, only the glyphs we need.
+const FONT = {
+  A: ['01110', '10001', '10001', '11111', '10001', '10001', '10001'],
+  B: ['11110', '10001', '10001', '11110', '10001', '10001', '11110'],
+  C: ['01111', '10000', '10000', '10000', '10000', '10000', '01111'],
+  D: ['11110', '10001', '10001', '10001', '10001', '10001', '11110'],
+  E: ['11111', '10000', '10000', '11110', '10000', '10000', '11111'],
+  H: ['10001', '10001', '10001', '11111', '10001', '10001', '10001'],
+  I: ['11111', '00100', '00100', '00100', '00100', '00100', '11111'],
+  N: ['10001', '11001', '10101', '10011', '10001', '10001', '10001'],
+  O: ['01110', '10001', '10001', '10001', '10001', '10001', '01110'],
+  P: ['11110', '10001', '10001', '11110', '10000', '10000', '10000'],
+  R: ['11110', '10001', '10001', '11110', '10100', '10010', '10001'],
+  S: ['01111', '10000', '10000', '01110', '00001', '00001', '11110'],
+  T: ['11111', '00100', '00100', '00100', '00100', '00100', '00100'],
+  ' ': ['00000', '00000', '00000', '00000', '00000', '00000', '00000'],
+};
+// Returns a list of filled cell rects for a string at (x, y) with cell size c.
+function textCells(str, x, y, c, gap = 1) {
+  const cells = [];
+  [...str].forEach((ch, k) => {
+    const g = FONT[ch]; if (!g) return;
+    g.forEach((row, j) => [...row].forEach((bit, i) => { if (bit === '1') cells.push([x + (k * (5 + gap) + i) * c, y + j * c, c]); }));
+  });
+  return cells;
+}
+const textWidth = (str, c, gap = 1) => (str.length * (5 + gap) - gap) * c;
+
+function renderOg() {
+  const OW = 1200, OH = 630, ss = 2, px = Buffer.alloc(OW * OH * 4);
+  const scene = 600, sx0 = 40, sy0 = (OH - scene) / 2;           // artwork square on the left
+  const big = 16, small = 6, lineGap = 30, subGap = 52;
+  const blockH = 14 * big + lineGap + subGap + 7 * small, ty = Math.round((OH - blockH) / 2);
+  const tx0 = 660 + Math.round((OW - 660 - 40 - textWidth('ORBIT', big)) / 2); // centred in the right column
+  const layers = [
+    { cells: textCells('ORBIT', tx0, ty, big), col: [232, 251, 255], glow: [79, 227, 255] },
+    { cells: textCells('DASH', tx0, ty + 7 * big + lineGap, big), col: [232, 251, 255], glow: [79, 227, 255] },
+    { cells: textCells('ONE TAP ARCADE', tx0, ty + 14 * big + lineGap + subGap, small), col: [255, 216, 74], glow: [255, 216, 74] },
+  ];
+  // bucket cells by 40px tile for fast lookups
+  const tiles = new Map(), T = 40, key = (i, j) => i * 1000 + j;
+  layers.forEach((L, li) => L.cells.forEach(([x, y, c]) => {
+    for (let i = Math.floor((x - 30) / T); i <= Math.floor((x + c + 30) / T); i++)
+      for (let j = Math.floor((y - 30) / T); j <= Math.floor((y + c + 30) / T); j++) {
+        const k = key(i, j); if (!tiles.has(k)) tiles.set(k, []); tiles.get(k).push([x, y, c, li]);
+      }
+  }));
+  for (let j = 0; j < OH; j++) for (let i = 0; i < OW; i++) {
+    let r = 0, g = 0, b = 0;
+    for (let sj = 0; sj < ss; sj++) for (let si = 0; si < ss; si++) {
+      const X = i + (si + 0.5) / ss, Y = j + (sj + 0.5) / ss;
+      let [cr, cg, cb] = shade((X - sx0) / scene, (Y - sy0) / scene, 0.02);
+      const near = tiles.get(key(Math.floor(X / T), Math.floor(Y / T)));
+      if (near) {
+        let inside = -1, glowA = 0, glowC = null;
+        for (const [x, y, c, li] of near) {
+          const dx = Math.max(x - X, 0, X - (x + c)), dy = Math.max(y - Y, 0, Y - (y + c)), d = Math.hypot(dx, dy);
+          if (d === 0) { inside = li; break; }
+          const a = Math.max(0, 1 - d / 22) ** 2 * 0.22;
+          if (a > glowA) { glowA = a; glowC = layers[li].glow; }
+        }
+        if (inside >= 0) [cr, cg, cb] = layers[inside].col;
+        else if (glowC) { cr += (glowC[0] - cr) * glowA; cg += (glowC[1] - cg) * glowA; cb += (glowC[2] - cb) * glowA; }
+      }
+      r += cr; g += cg; b += cb;
+    }
+    const o = (j * OW + i) * 4, n = ss * ss;
+    px[o] = Math.min(255, r / n); px[o + 1] = Math.min(255, g / n); px[o + 2] = Math.min(255, b / n); px[o + 3] = 255;
+  }
+  // png() assumes square; write a rectangular variant inline
+  const ihdr = Buffer.alloc(13); ihdr.writeUInt32BE(OW, 0); ihdr.writeUInt32BE(OH, 4); ihdr[8] = 8; ihdr[9] = 6;
+  const raw = Buffer.alloc(OH * (OW * 4 + 1));
+  for (let y = 0; y < OH; y++) px.copy(raw, y * (OW * 4 + 1) + 1, y * OW * 4, (y + 1) * OW * 4);
+  return Buffer.concat([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), chunk('IHDR', ihdr), chunk('IDAT', deflateSync(raw, { level: 9 })), chunk('IEND', Buffer.alloc(0))]);
+}
+const ogPath = join(out, '..', 'og-image.png');
+writeFileSync(ogPath, renderOg());
+console.log('wrote og-image.png (convert to JPEG: sips -s format jpeg -s formatOptions 82 og-image.png --out og-image.jpg)');
+void textWidth;
